@@ -1,0 +1,48 @@
+{
+  "train_micro_batch_size_per_gpu": "auto",
+  "gradient_accumulation_steps": "auto",
+  "wall_clock_breakdown": false,
+  "bf16": {
+    "enabled": true
+  },
+  "zero_optimization": {
+    "stage": 2,
+    "allgather_partitions": true,
+    "allgather_bucket_size": 200000000.0,
+    "reduce_scatter": true,
+    "reduce_bucket_size": 200000000.0,
+    "overlap_comm": true,
+    "contiguous_gradients": true,
+    "offload_optimizer": {
+      "device": "cpu",
+      "pin_memory": true,
+      "fast_init": false
+    }
+  },
+  "optimizer": {
+    "type": "AdamW",
+    "params": {
+      "lr": "auto",
+      "betas": [
+        0.9,
+        0.999
+      ],
+      "eps": 1e-08,
+      "weight_decay": "auto"
+    }
+  },
+  "fp16": {
+    "enabled": false,
+    "loss_scale": 0,
+    "initial_scale_power": 32,
+    "loss_scale_window": 1000,
+    "hysteresis": 2,
+    "min_loss_scale": 1
+  },
+  "gradient_clipping": 1.0,
+  "tensorboard": {
+    "enabled": true,
+    "output_path": "/common/users/wz283/tb_logs",
+    "job_name": "T5-large-cluster-id"
+  }
+}
