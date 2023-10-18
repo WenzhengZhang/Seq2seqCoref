@@ -30,9 +30,9 @@ from transformers.pytorch_utils import is_torch_less_than_1_11
 from torch.utils.data import DataLoader
 from transformers.trainer_utils import EvalLoopOutput, has_length, \
     denumpify_detensorize, ShardedDDPOption
-from data import get_document_predicts, SPECIAL_IDS, \
-    parse_int_output_tokens, parse_short_target_tokens, MARK_SPECIAL_IDS, \
-    NON_INT_SPECIAL_IDS, parse_nonint_output_tokens
+from data import get_document_predicts, parse_int_output_tokens, \
+    parse_short_target_tokens, parse_nonint_output_tokens
+from constants import SPECIAL_IDS, MARK_SPECIAL_IDS, NON_INT_SPECIAL_IDS
 from transformers.deepspeed import deepspeed_init
 from transformers.trainer_pt_utils import find_batch_size, nested_concat, \
     nested_numpify, IterableDatasetShard, nested_truncate, get_parameter_names
@@ -78,76 +78,6 @@ SCALER_NAME = "scaler.pt"
 
 
 class CorefTrainer(Seq2SeqTrainer):
-
-    # def _load_best_model(self):
-    #     logger.info(f"Loading best model "
-    #                 f"from {self.state.best_model_checkpoint} (score:"
-    #                 f" {self.state.best_metric}).")
-    #     if self.args.use_peft:
-    #         pass
-    #     else:
-    #         best_model_path = os.path.join(self.state.best_model_checkpoint,
-    #                                        WEIGHTS_NAME)
-    #         model = self.model_wrapped if is_sagemaker_mp_enabled() else self.model
-    #         if os.path.exists(best_model_path):
-    #             if self.deepspeed:
-    #
-    #                 if self.model_wrapped is not None:
-    #                     # this removes the pre-hooks from the previous engine
-    #                     self.model_wrapped.destroy()
-    #                     self.model_wrapped = None
-    #
-    #                 # temp hack until Deepspeed fixes the problem with resume from an existing engine that did some stepping
-    #                 deepspeed_engine, optimizer, lr_scheduler = deepspeed_init(
-    #                     self,
-    #                     num_training_steps=self.args.max_steps,
-    #                     resume_from_checkpoint=self.state.best_model_checkpoint,
-    #                 )
-    #                 self.model = deepspeed_engine.module
-    #                 self.model_wrapped = deepspeed_engine
-    #                 self.deepspeed = deepspeed_engine
-    #                 self.optimizer = optimizer
-    #                 self.lr_scheduler = lr_scheduler
-    #             else:
-    #                 if is_sagemaker_mp_enabled():
-    #                     if os.path.isfile(os.path.join(
-    #                             self.state.best_model_checkpoint, "user_content.pt")):
-    #                         # If the 'user_content.pt' file exists, load with the new smp api.
-    #                         # Checkpoint must have been saved with the new smp api.
-    #                         smp.resume_from_checkpoint(
-    #                             path=self.state.best_model_checkpoint,
-    #                             tag=WEIGHTS_NAME,
-    #                             partial=False,
-    #                             load_optimizer=False,
-    #                         )
-    #                     else:
-    #                         # If the 'user_content.pt' file does NOT exist, load with the old smp api.
-    #                         # Checkpoint must have been saved with the old smp api.
-    #                         state_dict = torch.load(best_model_path, map_location="cpu")
-    #                         state_dict["_smp_is_partial"] = False
-    #                         load_result = model.load_state_dict(state_dict, strict=True)
-    #                 else:
-    #                     # We load the model state dict on the CPU to avoid an OOM error.
-    #                     state_dict = torch.load(best_model_path, map_location="cpu")
-    #                     # If the model is on the GPU, it still works!
-    #                     # workaround for FSDP bug https://github.com/pytorch/pytorch/issues/82963
-    #                     # which takes *args instead of **kwargs
-    #                     load_result = model.load_state_dict(state_dict, False)
-    #                 if not is_sagemaker_mp_enabled():
-    #                     self._issue_warnings_after_load(load_result)
-    #         elif os.path.exists(os.path.join(self.state.best_model_checkpoint,
-    #                                          WEIGHTS_INDEX_NAME)):
-    #             load_result = load_sharded_checkpoint(
-    #                 model, self.state.best_model_checkpoint,
-    #                 strict=is_sagemaker_mp_enabled()
-    #             )
-    #             if not is_sagemaker_mp_enabled():
-    #                 self._issue_warnings_after_load(load_result)
-    #         else:
-    #             logger.warning(
-    #                 f"Could not locate the best model at {best_model_path}, if you are running a distributed training "
-    #                 "on multiple nodes, you should activate `--save_on_each_node`."
-    #             )
 
     def _rotate_checkpoints(self, use_mtime=False, output_dir=None) -> None:
         if self.args.save_total_limit is None or self.args.save_total_limit <= 0:

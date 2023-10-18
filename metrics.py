@@ -25,7 +25,7 @@ class CorefAllMetrics(object):
 
     def _compute_mention_detect_metrics(self, gold_clusters: List[list],
                                         predicted_clusters: List[list]):
-        # TODO: add mention detection evaluation
+        #  mention detection evaluation
         mention_evaluator = MentionEvaluator()
         results = {}
         predicted_mentions = list(self._get_mention_to_x(

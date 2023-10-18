@@ -3,7 +3,7 @@ import json
 import re
 from collections import defaultdict
 from metrics import CorefAllMetrics
-from typing import Dict, Union, Any, Optional, Tuple, List
+from typing import Dict
 from data import get_document_predicts, SPECIAL_IDS, parse_short_target_tokens
 import argparse
 from transformers import T5Tokenizer

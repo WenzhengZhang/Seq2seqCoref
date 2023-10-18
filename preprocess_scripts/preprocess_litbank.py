@@ -10,16 +10,10 @@ import copy
 import collections
 import logging
 from typing import Optional, Tuple, Any, Dict, Iterable, List
-
-import utils
-import conll
-from transformers import T5Tokenizer
 from collections import defaultdict
 import numpy as np
 import argparse
 
-# Usage:
-# python t5minimize_coref.py ontonotes_coref/ ontonotes_coref/
 
 logging.basicConfig(
     format='%(asctime)s - %(levelname)s - %(name)s - %(message)s',
@@ -28,39 +22,14 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__file__)
 
-tokenizer = T5Tokenizer.from_pretrained("t5-small", model_max_length=4096)
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__),
+                                                '../')))
+import utils
+import conll
+from constants import int_tokenizer as tokenizer
+from constants import SPEAKER_START, SPEAKER_END, MENTION_START, MENTION_END,\
+    SEP_TOKEN, COPY, SPECIAL_IDS
 
-SPEAKER_START = '<speaker>'
-SPEAKER_END = '</speaker>'
-MENTION_START = '<m>'
-MENTION_END = '</m>'
-SEP_TOKEN = '|'
-COPY = '<copy>'
-
-tokenizer.add_tokens([SPEAKER_START, SPEAKER_END,
-                      MENTION_START, MENTION_END, COPY])
-SPECIAL_IDS = {
-    'speaker_start': tokenizer.encode(SPEAKER_START,
-                                      add_special_tokens=False)[0],
-    'speaker_end': tokenizer.encode(SPEAKER_END, add_special_tokens=False)[0],
-    'mention_start': tokenizer.encode(MENTION_START,
-                                      add_special_tokens=False)[0],
-    'mention_end': tokenizer.encode(MENTION_END, add_special_tokens=False)[0],
-    'sep': tokenizer.encode(SEP_TOKEN, add_special_tokens=False)[0],
-    'copy': tokenizer.encode(COPY, add_special_tokens=False)[0],
-    'eos': tokenizer.eos_token_id
-    # 'sep': tokenizer.convert_tokens_to_ids(SEP_TOKEN)
-}
-integers = []
-for i in range(500):
-    cid = tokenizer.encode(str(i), add_special_tokens=False)
-    integers.extend(cid)
-integers = list(set(integers))
-SPECIAL_IDS['integers'] = integers
-
-
-# TODO: support action target sequence, text target sequence and short target
-#  sequence
 
 class DocumentState(object):
     def __init__(self, key):

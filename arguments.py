@@ -1,4 +1,3 @@
-import os
 from dataclasses import dataclass, field
 from typing import Optional, List, Union
 from transformers import Seq2SeqTrainingArguments
@@ -105,6 +104,8 @@ class DataArguments:
 
 @dataclass
 class CorefTrainingArguments(Seq2SeqTrainingArguments):
+    do_train: bool = field(default=True,
+                           metadata={"help": "Whether to run training."})
     save_dir: Optional[str] = field(
         default=None, metadata={"help": "Path to save predicts directory"}
     )

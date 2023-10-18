@@ -1,17 +1,11 @@
-from typing import Optional, Tuple, Any, Dict, Iterable, Union
+from typing import Optional, Tuple, Dict, Union
 import torch
 import warnings
-from torch import nn
 from copy import deepcopy
 from torch.nn import CrossEntropyLoss
-from torch.utils.checkpoint import checkpoint
-import torch.nn.init as init
-import torch.nn.functional as F
 from transformers.modeling_outputs import (
     BaseModelOutput,
-    BaseModelOutputWithPastAndCrossAttentions,
-    Seq2SeqLMOutput,
-    Seq2SeqModelOutput,
+    Seq2SeqLMOutput
 )
 
 from transformers.models.t5.modeling_t5 import (
@@ -247,7 +241,6 @@ class ConstrainedT5(T5ForConditionalGeneration):
             cut_input_ids = input_ids[:, -1:]
         else:
             cut_input_ids = input_ids
-        # print(kwargs)
 
         return {
             "decoder_input_ids": cut_input_ids,

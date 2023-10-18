@@ -1,19 +1,10 @@
 import networkx as nx
 import json
-from typing import Tuple, List, Dict
 import os
 import random
-import numpy as np
-import logging
-import itertools
 from torch.utils.data import Dataset, DataLoader
 from transformers import DataCollatorForSeq2Seq
 from collections import defaultdict
-from preprocess import SPEAKER_START, SPEAKER_END, MENTION_START, \
-    MENTION_END, SEP_TOKEN, SPECIAL_IDS, COPY
-from preprocess_non_integer import CLUSTER_NEW, CLUSTERS
-from preprocess_non_integer import SPECIAL_IDS as NON_INT_SPECIAL_IDS
-from preprocess_mark_sentence import SPECIAL_IDS as MARK_SPECIAL_IDS
 import re
 import torch
 from copy import deepcopy
@@ -24,10 +15,6 @@ from transformers.utils import PaddingStrategy
 from alignment import global_align, affine_global_align
 from utils import split_list
 
-
-# TODO: add input_feed and seq2puretag options
-# TODO: joint dataset
-# TODO: load_dataset style dataset
 
 class JointDataset(Dataset):
 

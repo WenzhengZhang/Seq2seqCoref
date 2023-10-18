@@ -48,7 +48,6 @@ class ShortSeqProcessor(LogitsProcessor):
             unclose_sent], False)
         masks[unclose_sent, self.sentence_start] = True
         masks[unclose_ent, torch.tensor(self.ent_ids).unsqueeze(1)] = False
-        # print(close_ent.nonzero())
         masks[close_ent, self.mention_start] = False
         masks[unclose_ment, self.sep] = False
         is_eos = (close_sent & (sent_idx.sum(-1) == sent_mask[:, -1]))
@@ -104,9 +103,7 @@ class IntProcessor(LogitsProcessor):
         close_ent = (~unclose_ent)
         num_copied = num_copied.clamp(max=self.orig_inputs.size(1) - 1)
         # unclosed ent only allows to generate cluster ids or end mention id
-        # masks[:, self.specials] = False
         masks[unclose_ent, torch.tensor(self.ent_ids).unsqueeze(1)] = False
-        # print(close_ent.nonzero())
         masks[close_ent, self.mention_start] = False
         masks[unclose_ment, self.sep] = False
         # get next copy id
@@ -126,7 +123,6 @@ class IntProcessor(LogitsProcessor):
         is_eos = (close_ent & (next_ids == self.eos_id))
         masks[is_eos, torch.tensor(self.specials).unsqueeze(1)] = True
         masks[is_eos, self.eos_id] = False
-        # print((~masks).nonzero())
         scores.masked_fill_(masks, -float('inf'))
         return scores
 
@@ -227,7 +223,6 @@ class NonIntProcessor(LogitsProcessor):
         is_eos = (next_ids == self.eos_id)
         masks[is_eos] = True
         masks[is_eos, self.eos_id] = False
-        # print((~masks).nonzero())
         scores.masked_fill_(masks, -float('inf'))
         return scores
 

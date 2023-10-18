@@ -7,12 +7,13 @@ from transformers import AutoModelForSeq2SeqLM, \
 from transformers.integrations import TensorBoardCallback
 from arguments import DataArguments, ModelArguments, CorefTrainingArguments \
     as TrainingArguments
-from data import CorefDataset, SPEAKER_START, SPEAKER_END, \
-    MENTION_START, MENTION_END, COPY, CLUSTER_NEW, CLUSTERS
+from data import CorefDataset
+from constants import SPEAKER_START, SPEAKER_END, \
+    MENTION_START, MENTION_END, COPY, CLUSTER_NEW, CLUSTERS, SPECIAL_IDS, \
+    NON_INT_SPECIAL_IDS
 from trainer import CorefTrainer
-from data import ConstrainedDataCollator, SPECIAL_IDS, NON_INT_SPECIAL_IDS
+from data import ConstrainedDataCollator
 from model import ConstrainedT5
-import torch
 
 logger = logging.getLogger(__name__)
 logger.addHandler(logging.StreamHandler(sys.stdout))
@@ -66,7 +67,7 @@ def main():
     set_seed(training_args.seed)
     tokenizer = AutoTokenizer.from_pretrained(model_args.model_name_or_path)
     if (training_args.seq2seq_type == "action" or training_args.seq2seq_type
-            == "input_feed") and training_args.action_type == "non_integer":
+        == "input_feed") and training_args.action_type == "non_integer":
         tokenizer.add_tokens([SPEAKER_START, SPEAKER_END,
                               MENTION_START, MENTION_END, COPY, CLUSTER_NEW] +
                              CLUSTERS)

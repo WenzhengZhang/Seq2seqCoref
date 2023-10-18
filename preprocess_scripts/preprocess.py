@@ -10,16 +10,9 @@ import copy
 import collections
 import logging
 from typing import Optional, Tuple, Any, Dict, Iterable, List
-
-import utils
-import conll
-from transformers import T5Tokenizer
 from collections import defaultdict
 import numpy as np
 import argparse
-
-# Usage:
-# python t5minimize_coref.py ontonotes_coref/ ontonotes_coref/
 
 logging.basicConfig(
     format='%(asctime)s - %(levelname)s - %(name)s - %(message)s',
@@ -27,51 +20,20 @@ logging.basicConfig(
     level=logging.INFO
 )
 logger = logging.getLogger(__file__)
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__),
+                                                '../')))
+import utils
+import conll
+from constants import SPEAKER_START, SPEAKER_END, MENTION_START, MENTION_END, \
+    SEP_TOKEN, COPY, SPECIAL_IDS
+from constants import int_tokenizer as tokenizer
 
-tokenizer = T5Tokenizer.from_pretrained("t5-small", model_max_length=4096)
-
-SPEAKER_START = '<speaker>'
-SPEAKER_END = '</speaker>'
-SENTENCE_START = '<sentence>'
-SENTENCE_END = '</sentence>'
-MENTION_START = '<m>'
-MENTION_END = '</m>'
-SEP_TOKEN = '|'
-COPY = '<copy>'
-
-tokenizer.add_tokens([SPEAKER_START, SPEAKER_END,
-                      MENTION_START, MENTION_END, COPY, SENTENCE_START,
-                      SENTENCE_END])
-SPECIAL_IDS = {
-    'speaker_start': tokenizer.encode(SPEAKER_START,
-                                      add_special_tokens=False)[0],
-    'speaker_end': tokenizer.encode(SPEAKER_END, add_special_tokens=False)[0],
-    'sentence_start': tokenizer.encode(SENTENCE_START,
-                                       add_special_tokens=False)[0],
-    'sentence_end': tokenizer.encode(SENTENCE_END, add_special_tokens=False)[0],
-    'mention_start': tokenizer.encode(MENTION_START,
-                                      add_special_tokens=False)[0],
-    'mention_end': tokenizer.encode(MENTION_END, add_special_tokens=False)[0],
-    'sep': tokenizer.encode(SEP_TOKEN, add_special_tokens=False)[0],
-    'copy': tokenizer.encode(COPY, add_special_tokens=False)[0],
-    'eos': tokenizer.eos_token_id
-    # 'sep': tokenizer.convert_tokens_to_ids(SEP_TOKEN)
-}
-integers = []
-for i in range(500):
-    cid = tokenizer.encode(str(i), add_special_tokens=False)
-    integers.extend(cid)
-integers = list(set(integers))
-SPECIAL_IDS['integers'] = integers
-
-
-# TODO: support action target sequence, text target sequence and short target
-#  sequence
 
 class DocumentState(object):
     def __init__(self, key):
         self.doc_key = key
         self.sentence_end = []
+        self.sent_end_marks = []
         self.token_end = []
         self.tokens = []
         self.subtokens = []
@@ -81,6 +43,7 @@ class DocumentState(object):
         self.segment_subtoken_map = []
         self.sentence_map = []
         self.segment_sentence_map = []
+        self.segment_sent_end_mark = []
         self.pronouns = []
         self.clusters = collections.defaultdict(list)
         self.coref_stacks = collections.defaultdict(list)
@@ -224,25 +187,29 @@ class DocumentState(object):
         sentence_map = self.segment_sentence_map
         assert num_words == len(utils.flat_lists(sentence_map))
 
+        sent_end_marks = self.segment_sent_end_mark
+        assert num_words == len(utils.flat_lists(sent_end_marks))
+
         # all_mentions = utils.flat_lists(merged_clusters)
         all_mentions = list(mention_to_seg_id.keys())
         assert len(all_mentions) == len(set(all_mentions))
         sentences = self.segments
 
         # inserting <m> and </m> into target sequences for all mentions
-        target_sentences = m_star_target_sequences(
+        target_sentences, target_sent_maps = m_star_target_sequences(
             all_mentions, self.segments,
             MENTION_START, MENTION_END, SEP_TOKEN,
             mention_to_seg_id, cluster_indices,
-            self.offsets
+            self.offsets, sent_end_marks
         )
         target_short_seqs = []
-        for target_seq in target_sentences:
-            target_short = trim_target_sequence(target_seq,
-                                                MENTION_START, MENTION_END,
-                                                SENTENCE_START, SENTENCE_END
-                                                )
-            target_short_seqs.append(target_short)
+        target_short_sent_end_seqs = []
+        for target_seq, target_sent_map in zip(target_sentences,
+                                               target_sent_maps):
+            target_short = trim_target_sequence(target_seq, target_sent_map,
+                                                MENTION_START, MENTION_END)
+            target_short_seqs.append(target_short[0])
+            target_short_sent_end_seqs.append(target_short[1])
 
         target_maps = get_target_map(target_sentences,
                                      tokenizer.tokenize(MENTION_END)[0],
@@ -261,6 +228,8 @@ class DocumentState(object):
                 # "target_map": target_maps[i],
                 "target_action": target_tags[i],
                 "target_short_sentence": target_short_seqs[i],
+                "target_sent_end_short_sentence": target_short_sent_end_seqs[i],
+                'sentence_end_marks': sent_end_marks[i],
                 "subtoken_map": subtoken_map[i],
                 "gold_clusters": gold_clusters,
                 "seg_clusters": all_word_seg_clusters[i],
@@ -320,7 +289,8 @@ def m_star_target_sequences(
         m_sep: str,
         mention_to_seg_id: Dict[tuple, list],
         cluster_indices: List[Dict],
-        offsets: List
+        offsets: List,
+        sent_end_marks: List[List[str]]
 ):
     """
         Get a sequence of target sentences with <m> and <\m> inserted.
@@ -350,6 +320,7 @@ def m_star_target_sequences(
     # insert from right to left, so that the calculated positions are not changed
     sorted_pos = sorted(end_pos + start_pos, reverse=True)
     target_sequences = copy.deepcopy(sequences)
+    target_sent_end_marks = copy.deepcopy(sent_end_marks)
     # offset of each segment
     # prev_loc, prev_token, prev_seg_idx = -1, None, -1
     for x in sorted_pos:
@@ -359,36 +330,47 @@ def m_star_target_sequences(
             # start
             assert x[2] == 1
             target_sequences[seg_idx].insert(x[1] - offset, m_special_start)
+            target_sent_end_marks[seg_idx].insert(x[1] - offset, 'none')
         else:
             # end
             end_inserts = tokenizer.tokenize(
                 m_sep) + tokenizer.tokenize(str(x[-1])) + [m_special_end]
             for e in reversed(end_inserts):
                 target_sequences[seg_idx].insert(x[1] - offset, e)
-    return target_sequences
+                target_sent_end_marks[seg_idx].insert(
+                    x[1] - offset, 'none')
+    return target_sequences, target_sent_end_marks
 
 
-def trim_target_sequence(target_seq,
+def trim_target_sequence(target_seq, target_sent_end_mark,
                          m_special_start,
-                         m_special_end,
-                         sentence_start,
-                         sentence_end
-                         ):
+                         m_special_end):
     out_seq = []
+    out_seq_w_sent_end = []
     ment_stack = []
     # use sentence map to add periods
-    for idx, s in enumerate(target_seq):
+    last_idx = -1
+    assert len(target_seq) == len(target_sent_end_mark)
+    for idx, (s, m) in enumerate(zip(target_seq, target_sent_end_mark)):
+        # if m != 'none':
+        #     out_seq_w_sent_end.append(m)
         if s == m_special_start:
             out_seq.append(s)
+            out_seq_w_sent_end.append(s)
             ment_stack.append(idx)
         elif len(ment_stack) > 0:
             out_seq.append(s)
+            out_seq_w_sent_end.append(s)
+            # out_seq.append(SENT_END)
             if s == m_special_end:
                 ment_stack.pop()
-        elif s == sentence_start or s == sentence_end:
-            out_seq.append(s)
+        elif m != 'none':
+            out_seq_w_sent_end.append(m)
+        last_idx = idx
+    # out_seq_w_sent_end.append(target_seq[last_idx])
+    out_seq_w_sent_end.append('</s>')
     out_seq.append('</s>')
-    return out_seq
+    return out_seq, out_seq_w_sent_end
 
 
 def get_target_tags(target_sequences,
@@ -482,6 +464,8 @@ def split_into_segments(
             document_state.subtokens[current:end + 1] + [
                 '</s>'])
         sent_map = document_state.sentence_map[current:end + 1]
+        sent_end_mark = document_state.sent_end_marks[current:end + 1]
+        document_state.segment_sent_end_mark.append(sent_end_mark + ['none'])
         document_state.segment_sentence_map.append(sent_map + [sent_map[-1]])
         subtoken_map = document_state.subtoken_map[current:end + 1]
         document_state.segment_subtoken_map.append(
@@ -521,8 +505,7 @@ def get_document(
     current_speaker = None
     after_hyphen = False
     doc_lines = document_lines[1]
-    last_sent_idx = None
-    sent_idx = 0
+
     for line in doc_lines:
         row = line.split()
         sentence_end = len(row) == 0
@@ -530,16 +513,6 @@ def get_document(
             assert len(row) >= 12
             speaker_orthography = row[9].replace("_", " ").replace("#",
                                                                    " ").strip()
-            if last_sent_idx is None or sent_idx != last_sent_idx:
-                word_idx += 1
-                document_state.token_end.append(True)
-                document_state.subtokens.append(SENTENCE_START)
-                info = None
-                document_state.info.append(info)
-                document_state.sentence_end.append(False)
-                document_state.subtoken_map.append(word_idx)
-                last_sent_idx = sent_idx
-
             if current_speaker is None or current_speaker != speaker_orthography:
                 # insert speaker
                 word_idx += 1
@@ -561,6 +534,7 @@ def get_document(
                     info = None
                     document_state.info.append(info)
                     document_state.sentence_end.append(False)
+                    document_state.sent_end_marks.append('none')
                     document_state.subtoken_map.append(word_idx)
 
             word_idx += 1
@@ -591,16 +565,24 @@ def get_document(
                 info = None if sidx != 0 else (row + [len(subtokens)])
                 document_state.info.append(info)
                 document_state.sentence_end.append(False)
+                document_state.sent_end_marks.append('none')
                 document_state.subtoken_map.append(word_idx)
         else:
-            word_idx += 1
-            document_state.token_end.append(True)
-            document_state.subtokens.append(SENTENCE_END)
-            document_state.info.append(None)
-            document_state.sentence_end.append(True)
-            document_state.subtoken_map.append(word_idx)
-            sent_idx += 1
-            # document_state.sentence_end[-1] = True
+            assert len(document_state.sent_end_marks) == len(
+                document_state.subtokens)
+            assert len(document_state.sent_end_marks) == len(
+                document_state.subtoken_map)
+            last_subtoken_idx = document_state.subtoken_map[-1]
+            for t in range(len(document_state.sent_end_marks) - 1, -1, -1):
+                if document_state.subtoken_map[t] != last_subtoken_idx:
+                    break
+                if not is_punctuation(document_state.subtokens[t]):
+                    pass
+                    # print(document_state.subtokens[t])
+                else:
+                    document_state.sent_end_marks[t] = document_state.subtokens[
+                        t]
+            document_state.sentence_end[-1] = True
 
     constraints1 = (
         document_state.sentence_end
