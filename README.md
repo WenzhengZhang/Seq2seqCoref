@@ -20,11 +20,10 @@ pip install -r requirements.txt
 
 
 #### PreCo
-- Download from [PreCo official website](https://preschool-lab.github.io/PreCo/)  or from [Community](https://drive.google.com/file/d/1q0oMt1Ynitsww9GkuhuwNZNq6SjByu-Y/view)
+- Download from [PreCo official website](https://preschool-lab.github.io/PreCo/)  or from [Community](https://drive.google.com/file/d/1q0oMt1Ynitsww9GkuhuwNZNq6SjByu-Y/view).
 
 #### LitBank
-- Follow https://github.com/dbamman/lrec2020-coref to obtain the 10-fold
- LitBank raw data
+- Follow https://github.com/dbamman/lrec2020-coref to obtain the 10-fold LitBank raw data.
 
 ## Preprocess data
 
