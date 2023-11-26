@@ -116,7 +116,7 @@ class CorefTrainingArguments(Seq2SeqTrainingArguments):
         default=False, metadata={"help": "mark sentence end for short target?"}
     )
     align_mode: Optional[str] = field(
-        default='h', metadata={"help": "alignment mode: highroad (h) or "
+        default='l', metadata={"help": "alignment mode: highroad (h) or "
                                        "lowroad (l) "}
     )
     optim: Union[OptimizerNames, str] = field(
@@ -168,50 +168,15 @@ class CorefTrainingArguments(Seq2SeqTrainingArguments):
     joint_data_names: Optional[str] = field(
         default=None, metadata={"help": "datasets names for joint training"}
     )
-    joint_threds: Optional[str] = field(
+    joint_min_num_mentions: Optional[str] = field(
         default=None, metadata={"help": "threshold for num mentions per epoch "
                                         "in joint training for each dataset"}
     )
+    min_num_mentions: Optional[int] = field(
+        default=2, metadata={"help": "minimum number of mentions per cluster,"
+                                     "ontonotes is 2 other datasets is 1 "
+                                     "(allow singletons)"}
+    )
     joint_train: Optional[bool] = field(
         default=False, metadata={"help": "whether to use joint training"}
-    )
-    use_peft: Optional[bool] = field(
-        default=False, metadata={"help": "use lora or model quantization for "
-                                         "training larger models"}
-    )
-    use_lora: Optional[bool] = field(
-        default=False, metadata={"help": "use lora finetune"}
-    )
-    lora_r: Optional[int] = field(
-        default=16, metadata={"help": "lora r parameter"}
-    )
-    lora_alpha: Optional[int] = field(
-        default=32, metadata={"help": "lora alpha parameter"}
-    )
-    lora_dropout: Optional[float] = field(
-        default=0.05, metadata={"help": "lora dropout"}
-    )
-    lora_module_type: Optional[str] = field(
-        default="all_linear", metadata={"help": "target lora modules type: "
-                                                "all_linear, attention, mlp"}
-    )
-    use_low_bit: Optional[bool] = field(
-        default=False, metadata={"help": "use low-bit quantized model"}
-    )
-    bits: Optional[int] = field(
-        default=16, metadata={"help": "num bits"}
-    )
-    max_memory_MB: Optional[int] = field(
-        default=40000,
-        metadata={"help": "Free memory per gpu."}
-    )
-    double_quant: Optional[bool] = field(
-        default=True,
-        metadata={
-            "help": "Compress the quantization statistics through double quantization."}
-    )
-    quant_type: Optional[str] = field(
-        default="nf4",
-        metadata={
-            "help": "Quantization data type to use. Should be one of `fp4` or `nf4`."}
     )

@@ -615,7 +615,8 @@ class CorefTrainer(Seq2SeqTrainer):
                            ) -> Dict:
         if self.args.joint_train:
             data_names = self.args.joint_data_names.split(',')
-            joint_threds = [int(t) for t in self.args.joint_threds.split(',')]
+            joint_threds = [
+                int(t) for t in self.args.joint_min_num_mentions.split(',')]
             name_to_threds = {n: t for n, t in zip(data_names, joint_threds)}
         documents_to_chunk_data = defaultdict(list)
         documents_to_chunk_gold = defaultdict(list)
@@ -637,7 +638,7 @@ class CorefTrainer(Seq2SeqTrainer):
             if self.args.joint_train:
                 thred = name_to_threds[id_to_name[doc_id]]
             else:
-                thred = 1 if self.args.allow_singletons else 2
+                thred = self.args.min_num_mentions
             if self.args.seq2seq_type == "short_seq":
                 special_ids = MARK_SPECIAL_IDS if self.args.mark_sentence \
                     else SPECIAL_IDS

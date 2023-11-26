@@ -129,7 +129,7 @@ class JointDataset(Dataset):
             ',') if self.split == 'train' else \
             self.data_args.joint_max_eval_lens.split(',')
         max_lens = [int(l) for l in max_lens]
-        threds = self.train_args.joint_threds.split(',')
+        threds = self.train_args.joint_min_num_mentions.split(',')
         threds = [int(t) for t in threds]
         data_dirs = self.data_args.joint_data_dirs.split(',')
         data_names = self.train_args.joint_data_names.split(',')
@@ -192,7 +192,7 @@ class CorefDataset(Dataset):
             f'{self.split}.t5-small.english.{max_len}.jsonlines')
         samples = []
         doc_labels = {}
-        thred = 1 if self.train_args.allow_singletons else 2
+        thred = self.train_args.min_num_mentions
         with open(data_path, 'r') as f:
             for line in f:
                 item = json.loads(line)
