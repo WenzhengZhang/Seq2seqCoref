@@ -1,6 +1,6 @@
 # Seq2seqCoref
 Official implementation for our EMNLP 2023 paper [Seq2seq is All You Need For
- Coreference Resolution](https://arxiv.org/pdf/2310.13774.pdf)
+ Coreference Resolution](https://arxiv.org/pdf/2310.13774.pdf).
  
 ## Setup
 
@@ -20,7 +20,7 @@ pip install -r requirements.txt
 
 
 #### PreCo
-- Download from [PreCo official website](https://preschool-lab.github.io/PreCo/)  or [From Community](https://drive.google.com/file/d/1q0oMt1Ynitsww9GkuhuwNZNq6SjByu-Y/view)
+- Download from [PreCo official website](https://preschool-lab.github.io/PreCo/)  or from [Community](https://drive.google.com/file/d/1q0oMt1Ynitsww9GkuhuwNZNq6SjByu-Y/view)
 
 #### LitBank
 - Follow https://github.com/dbamman/lrec2020-coref to obtain the 10-fold
