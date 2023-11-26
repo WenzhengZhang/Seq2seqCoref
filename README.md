@@ -54,7 +54,7 @@ python ./preprocess_scripts/preprocess_ontonotes_non_integer.py \
 
 ## Training and evaluation
 
-Train the model and do evaluation for each dataset
+Train/evaluate the model on each dataset
 ```
 bash run_scripts/train.sh \
     [input data directory] \
@@ -75,7 +75,7 @@ bash run_scripts/train.sh \
     [eval batch size: (1,2)]
 
 ```
-Train the joint model on the union of the three datasets by
+Train/evaluate the joint model on the union of the three datasets by
 
 ```
 bash run_scripts/train.sh \
