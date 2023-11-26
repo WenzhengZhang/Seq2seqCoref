@@ -1,0 +1,9 @@
+torch==1.12.1
+transformers==4.24.0
+datasets==2.7.1
+accelerate==0.14.0
+deepspeed==0.7.5
+scipy==1.9.3
+sentencepiece==0.1.97
+tensorboard==2.11.0
+networkx==2.8.8
