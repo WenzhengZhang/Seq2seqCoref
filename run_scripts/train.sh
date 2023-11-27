@@ -66,8 +66,9 @@ echo "training generative coreference model with trainer ... "
 #deepspeed --exclude localhost:0 main_trainer.py
 #python main_trainer.py \
 
-#deepspeed --exclude localhost:0 main_trainer.py \
-deepspeed main_trainer.py \
+
+#deepspeed main_trainer.py \
+deepspeed --exclude localhost:0 main_trainer.py \
     --output_dir $MODEL_SAVE_DIR  \
     --model_name_or_path $MODEL_NAME_OR_PATH \
     --do_train False \
