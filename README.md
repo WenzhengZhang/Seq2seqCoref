@@ -5,7 +5,7 @@ Official implementation for our EMNLP 2023 paper [Seq2seq is All You Need For
 ## Setup
 
 ```
-conda create -n seq2seq_coref
+conda create -n seq2seq_coref python==3.8
 conda activate seq2seq_coref
 pip install -r requirements.txt
 

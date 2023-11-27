@@ -15,7 +15,7 @@ log_step=$14
 eval_delay=$15
 eval_bsz=$16
 
-# lr=5e-4 for T5-base/large, lr=5e-5 for T0_3B, lr=2e-5/3e-5 for T0pp
+# lr=5e-4 for T5-base/large, lr=5e-5 for T0_3B, lr=1e-5/3e-5 for T0pp
 # min_num_mentions=2 for ontonotes, 1 for others
 # ontonotes: eval_len_out=4096 PreCo: eval_len_out=2560 LB: eval_len_out=6170
 # ontonotes: epochs=100 PreCO: epochs=10  LB: epochs=100
@@ -66,10 +66,11 @@ echo "training generative coreference model with trainer ... "
 #deepspeed --exclude localhost:0 main_trainer.py
 #python main_trainer.py \
 
-deepspeed main_trainer.py \
+#deepspeed main_trainer.py \
+deepspeed --exclude localhost:0 main_trainer.py \
     --output_dir $MODEL_SAVE_DIR  \
     --model_name_or_path $MODEL_NAME_OR_PATH \
-    --do_train  \
+    --do_train False \
     --save_strategy steps  \
     --load_best_model_at_end True \
     --metric_for_best_model average_f1 \

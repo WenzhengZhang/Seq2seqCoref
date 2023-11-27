@@ -21,7 +21,8 @@ logging.basicConfig(
     level=logging.INFO
 )
 logger = logging.getLogger(__file__)
-
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__),
+                                                '../')))
 from constants import int_tokenizer as tokenizer
 from constants import SPEAKER_START, SPEAKER_END, MENTION_START, MENTION_END, \
     SEP_TOKEN, COPY, SPECIAL_IDS
