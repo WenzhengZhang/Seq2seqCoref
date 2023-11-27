@@ -109,7 +109,8 @@ deepspeed main_trainer.py \
     --mark_sentence True \
     --action_type $ACTION_TYPE \
     --align_mode l \
-    --min_num_mentions $min_num_mentions
+    --min_num_mentions $min_num_mentions \
+    --add_mention_end True
 
 
 
