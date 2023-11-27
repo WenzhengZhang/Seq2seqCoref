@@ -1119,17 +1119,17 @@ class CorefTrainer(Seq2SeqTrainer):
         elif self.args.mark_sentence:
             gen_kwargs['logits_processor'] = LogitsProcessorList(
                 [ShortSeqProcessor(generation_inputs, MARK_SPECIAL_IDS)])
-        if self.args.use_peft:
-            gen_kwargs["input_ids"] = generation_inputs
-            gen_kwargs["use_cache"] = True
-            generated_tokens = self.model.generate(
-                **gen_kwargs,
-            )
-        else:
-            generated_tokens = self.model.generate(
-                generation_inputs,
-                **gen_kwargs,
-            )
+        # if self.args.use_peft:
+        #     gen_kwargs["input_ids"] = generation_inputs
+        #     gen_kwargs["use_cache"] = True
+        #     generated_tokens = self.model.generate(
+        #         **gen_kwargs,
+        #     )
+        # else:
+        generated_tokens = self.model.generate(
+            generation_inputs,
+            **gen_kwargs,
+        )
         # in case the batch is shorter than max length, the output should be padded
         if generated_tokens.shape[-1] < gen_kwargs["max_length"]:
             generated_tokens = self._pad_tensors_to_max_len(generated_tokens,
