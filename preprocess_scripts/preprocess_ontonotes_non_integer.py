@@ -224,7 +224,7 @@ class DocumentState(object):
                 "target_mention_end_sentence": target_mention_end_seqs[i],
                 # "target_map": target_maps[i],
                 "target_action": target_tags[i],
-                "target_mention_end_action": target_mention_end_tags,
+                "target_mention_end_action": target_mention_end_tags[i],
                 'sentence_end_marks': sent_end_marks[i],
                 "subtoken_map": subtoken_map[i],
                 "gold_clusters": gold_clusters,
