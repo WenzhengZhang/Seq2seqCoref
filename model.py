@@ -41,13 +41,14 @@ class ConstrainedT5(T5ForConditionalGeneration):
         self.add_mention_end = add_mention_end
         self.cluster_ids = None
         self.copy_id = special_ids['copy']
+        self.seq2seq_type = seq2seq_type
         if action_type == 'integer':
             self.sep = special_ids['sep']
             self.ent_ids = special_ids['integers'] + [
                 special_ids['mention_end']]
             self.specials = [self.mention_start, self.sep,
                              self.copy_id] + self.ent_ids
-            self.seq2seq_type = seq2seq_type
+            # self.seq2seq_type = seq2seq_type
         else:
             self.cluster_new = special_ids['cluster_new']
             self.cluster_ids = special_ids['cluster_ids']
