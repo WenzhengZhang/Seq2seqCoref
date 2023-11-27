@@ -8,7 +8,7 @@ PREDICT_SAVE_DIR=$6
 LOG_DIR=$7
 SEQ_TYPE=$8
 ACTION_TYPE=$9
-lr=$10
+lr=${10}
 # lr=5e-5 for T0_3B, lr=2e-5 for T0pp
 
 epochs=100

@@ -7,13 +7,13 @@ SEQ_TYPE=$6
 ACTION_TYPE=$7
 lr=$8
 epochs=$9
-eval_len_out=$10
-min_num_mentions=$11
-eval_step=$12
-save_step=$13
-log_step=$14
-eval_delay=$15
-eval_bsz=$16
+eval_len_out=${10}
+min_num_mentions=${11}
+eval_step=${12}
+save_step=${13}
+log_step=${14}
+eval_delay=${15}
+eval_bsz=${16}
 
 # lr=5e-4 for T5-base/large, lr=5e-5 for T0_3B, lr=1e-5/3e-5 for T0pp
 # min_num_mentions=2 for ontonotes, 1 for others
