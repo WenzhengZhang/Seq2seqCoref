@@ -15,7 +15,8 @@ log_step=${14}
 eval_delay=${15}
 eval_bsz=${16}
 
-# lr=5e-4 for T5-base/large, lr=5e-5 for T0_3B, lr=1e-5/3e-5 for T0pp
+# lr=5e-4 for T5-base/large, lr=5e-5 for T0_3B, lr=3e-5 for T0_3B integer-free
+# lr=1e-5/3e-5 for T0pp
 # min_num_mentions=2 for ontonotes, 1 for others
 # ontonotes: eval_len_out=4096 PreCo: eval_len_out=2560 LB: eval_len_out=6170
 # ontonotes: epochs=100 PreCO: epochs=10  LB: epochs=100
@@ -66,9 +67,8 @@ echo "training generative coreference model with trainer ... "
 #deepspeed --exclude localhost:0 main_trainer.py
 #python main_trainer.py \
 
-
-#deepspeed main_trainer.py \
-deepspeed --exclude localhost:0 main_trainer.py \
+#deepspeed --exclude localhost:0 main_trainer.py \
+deepspeed main_trainer.py \
     --output_dir $MODEL_SAVE_DIR  \
     --model_name_or_path $MODEL_NAME_OR_PATH \
     --do_train False \
@@ -106,7 +106,7 @@ deepspeed --exclude localhost:0 main_trainer.py \
     --deepspeed $ds_config_dir/ds_stage2.json \
     --gradient_checkpointing True \
     --seq2seq_type $SEQ_TYPE \
-    --mark_sentence False \
+    --mark_sentence True \
     --action_type $ACTION_TYPE \
     --align_mode l \
     --min_num_mentions $min_num_mentions
