@@ -71,7 +71,7 @@ echo "training generative coreference model with trainer ... "
 deepspeed main_trainer.py \
     --output_dir $MODEL_SAVE_DIR  \
     --model_name_or_path $MODEL_NAME_OR_PATH \
-    --do_train False \
+    --do_train True \
     --save_strategy steps  \
     --load_best_model_at_end True \
     --metric_for_best_model average_f1 \
@@ -110,7 +110,7 @@ deepspeed main_trainer.py \
     --action_type $ACTION_TYPE \
     --align_mode l \
     --min_num_mentions $min_num_mentions \
-    --add_mention_end True
+    --add_mention_end False
 
 
 

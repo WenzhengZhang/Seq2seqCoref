@@ -35,7 +35,7 @@ class ConstrainedT5(T5ForConditionalGeneration):
                  add_mention_end: bool):
         super().__init__(config)
         self.mention_start = special_ids['mention_start']
-        self.mention_end = special_ids['mention_end']
+        self.mention_end = special_ids.get('mention_end',None)
         self.eos_id = special_ids['eos']
         self.action_type = action_type
         self.add_mention_end = add_mention_end

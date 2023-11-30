@@ -8,9 +8,10 @@ from transformers.integrations import TensorBoardCallback
 from arguments import DataArguments, ModelArguments, CorefTrainingArguments \
     as TrainingArguments
 from data import CorefDataset, JointDataset
-from constants import SPEAKER_START, SPEAKER_END, MENTION_START, MENTION_END,\
+from constants import SPEAKER_START, SPEAKER_END, MENTION_START, MENTION_END, \
     COPY, CLUSTER_NEW, CLUSTERS, SENTENCE_START, SENTENCE_END, SPECIAL_IDS, \
-    NON_INT_SPECIAL_IDS, MARK_SPECIAL_IDS
+    NON_INT_SPECIAL_IDS, MARK_SPECIAL_IDS, MENTION_END_NON_INT_SPECIAL_IDS, \
+    MENTION_ENDS
 from trainer import CorefTrainer
 from data import ConstrainedDataCollator
 from model import ConstrainedT5
@@ -64,16 +65,24 @@ def main():
 
     set_seed(training_args.seed)
     tokenizer = AutoTokenizer.from_pretrained(model_args.model_name_or_path)
-    if (training_args.seq2seq_type == "action" or training_args.seq2seq_type
-        == "input_feed") and training_args.action_type == "non_integer":
-        num_new_tokens = tokenizer.add_tokens([SPEAKER_START, SPEAKER_END,
-                                               MENTION_START, MENTION_END, COPY,
-                                               CLUSTER_NEW] +
-                                              CLUSTERS)
-    else:
+    if training_args.action_type == "integer":
         num_new_tokens = tokenizer.add_tokens([SPEAKER_START, SPEAKER_END,
                                                MENTION_START, MENTION_END,
                                                COPY])
+    elif training_args.action_type == "non_integer":
+        if training_args.add_mention_end:
+            num_new_tokens = tokenizer.add_tokens([SPEAKER_START, SPEAKER_END,
+                                                   MENTION_START, MENTION_END,
+                                                   COPY,
+                                                   CLUSTER_NEW] +
+                                                  CLUSTERS)
+        else:
+            num_new_tokens = tokenizer.add_tokens([SPEAKER_START, SPEAKER_END,
+                                                   MENTION_START, COPY,
+                                                   CLUSTER_NEW] +
+                                                  MENTION_ENDS)
+    else:
+        raise ValueError(f"wrong action type {training_args.action_type}")
     if training_args.seq2seq_type == 'short_seq' and \
             training_args.mark_sentence:
         num_new_tokens += tokenizer.add_tokens([SENTENCE_START, SENTENCE_END])
@@ -84,8 +93,15 @@ def main():
         config.use_cache = False
     if training_args.seq2seq_type == 'action' or training_args.seq2seq_type \
             == 'tagging' or training_args.seq2seq_type == 'input_feed':
-        special_ids = SPECIAL_IDS if training_args.action_type == "integer" \
-            else NON_INT_SPECIAL_IDS
+        if training_args.action_type == "integer":
+            special_ids = SPECIAL_IDS
+        elif training_args.action_type == "non_integer":
+            if training_args.add_mention_end:
+                special_ids = MENTION_END_NON_INT_SPECIAL_IDS
+            else:
+                special_ids = NON_INT_SPECIAL_IDS
+        else:
+            raise ValueError(f"wrong action type {training_args.action_type}")
         model = ConstrainedT5.from_pretrained(
             model_args.model_name_or_path,
             config=config,

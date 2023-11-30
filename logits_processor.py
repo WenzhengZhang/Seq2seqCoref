@@ -129,7 +129,9 @@ class IntProcessor(LogitsProcessor):
 
 class NonIntProcessor(LogitsProcessor):
 
-    def __init__(self, orig_inputs, special_ids, add_mention_end):
+    def __init__(self, orig_inputs, special_ids,
+                 seq2seq_type,
+                 add_mention_end):
         """
 
         :param orig_inputs: original input_ids
@@ -140,8 +142,12 @@ class NonIntProcessor(LogitsProcessor):
         """
         self.orig_inputs = orig_inputs
         self.special_ids = special_ids
+        self.seq2seq_type = seq2seq_type
         self.mention_start = special_ids['mention_start']
-        self.mention_end = special_ids['mention_end']
+        if add_mention_end:
+            self.mention_end = special_ids['mention_end']
+        else:
+            self.mention_end = None
         self.cluster_ids = torch.tensor(special_ids['cluster_ids'],
                                         dtype=torch.long)
         self.cluster_new = special_ids['cluster_new']
@@ -209,13 +215,17 @@ class NonIntProcessor(LogitsProcessor):
         orig_ids = self.orig_inputs.repeat_interleave(num_beams, 0)
         next_ids = orig_ids[range_indices, num_copied]
         if self.add_mention_end:
-            scores[close_ent, next_ids[close_ent]] = scores[close_ent,
-                                                            self.copy_id]
+            if self.seq2seq_type == 'action' or self.seq2seq_type == \
+                    'input_feed':
+                scores[close_ent, next_ids[close_ent]] = scores[close_ent,
+                                                                self.copy_id]
             scores[unclosed_ent, next_cids[unclosed_ent]] = scores[
                 unclosed_ent, self.cluster_new]
             masks[close_ent, next_ids[close_ent]] = False
         else:
-            scores[range_indices, next_ids] = scores[:, self.copy_id]
+            if self.seq2seq_type == 'action' or self.seq2seq_type == \
+                    'input_feed':
+                scores[range_indices, next_ids] = scores[:, self.copy_id]
             scores[unclosed_ment, next_cids[unclosed_ment]] = scores[
                 unclosed_ment,
                 self.cluster_new]
@@ -225,6 +235,3 @@ class NonIntProcessor(LogitsProcessor):
         masks[is_eos, self.eos_id] = False
         scores.masked_fill_(masks, -float('inf'))
         return scores
-
-
-

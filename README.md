@@ -28,28 +28,21 @@ pip install -r requirements.txt
 ## Preprocess data
 
 ```
-python ./preprocess_scripts/preprocess_[ontonotes,preco,litbank].py \
-    --input_dir [your raw data directory] \
-    --output_dir [your processed data directory]
+python ./preprocess_scripts/preprocess_data.py \
+    --dataset_name [ontonotes, preco, litbank] \
+    --input_dir [your raw data directory for dataset_name] \
+    --output_dir [your processed data directory for dataset_name] \
+    --language english \
+    --seg_lens 4096,2048 \
+    --num_cross_val_splits [10 for litbank, 1 for others]
 
 ```
 
 For partial linearization with sentence markers, preprocess by
+ `preprocess_data_mark_sentence.py` with the same above script. 
 
-```
-python ./preprocess_scripts/preprocess_ontonotes_mark_sentence.py \
-    --input_dir [your raw data directory] \
-    --output_dir [your processed data directory]
 
-```
-For integer-free representation, preprocess by
 
-```
-python ./preprocess_scripts/preprocess_ontonotes_non_integer.py \
-    --input_dir [your raw data directory] \
-    --output_dir [your processed data directory]
-
-```
 
 ## Training and evaluation
 

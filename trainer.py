@@ -32,7 +32,8 @@ from transformers.trainer_utils import EvalLoopOutput, has_length, \
     denumpify_detensorize, ShardedDDPOption
 from data import get_document_predicts, parse_int_output_tokens, \
     parse_short_target_tokens, parse_nonint_output_tokens
-from constants import SPECIAL_IDS, MARK_SPECIAL_IDS, NON_INT_SPECIAL_IDS
+from constants import SPECIAL_IDS, MARK_SPECIAL_IDS, NON_INT_SPECIAL_IDS, \
+    MENTION_END_NON_INT_SPECIAL_IDS
 from transformers.deepspeed import deepspeed_init
 from transformers.trainer_pt_utils import find_batch_size, nested_concat, \
     nested_numpify, IterableDatasetShard, nested_truncate, get_parameter_names
@@ -676,11 +677,13 @@ class CorefTrainer(Seq2SeqTrainer):
                             self.tokenizer,
                             thred, is_tagging)
                 else:
+                    special_ids = MENTION_END_NON_INT_SPECIAL_IDS if \
+                        self.args.add_mention_end else NON_INT_SPECIAL_IDS
                     pred_data, pred_token_mentions, predict_ids = \
                         parse_nonint_output_tokens(
                             input_ids,
                             predict_ids,
-                            NON_INT_SPECIAL_IDS,
+                            special_ids,
                             subtoken_map,
                             self.tokenizer, self.args.add_mention_end,
                             thred)
@@ -1109,8 +1112,11 @@ class CorefTrainer(Seq2SeqTrainer):
         #  add our logits_processor here
         if self.args.seq2seq_type != 'short_seq':
             if self.args.action_type == 'non_integer':
+                special_ids = MENTION_END_NON_INT_SPECIAL_IDS if \
+                    self.args.add_mention_end else NON_INT_SPECIAL_IDS
                 gen_kwargs['logits_processor'] = LogitsProcessorList(
-                    [NonIntProcessor(generation_inputs, NON_INT_SPECIAL_IDS,
+                    [NonIntProcessor(generation_inputs, special_ids,
+                                     self.args.seq2seq_type,
                                      self.args.add_mention_end)])
             else:
                 gen_kwargs['logits_processor'] = LogitsProcessorList(

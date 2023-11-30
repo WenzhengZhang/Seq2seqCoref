@@ -70,15 +70,20 @@ class JointDataset(Dataset):
                 doc_key = item['doc_key']
                 doc_id = re.sub(r'_\d+$', '', doc_key)
                 id_to_name[doc_id] = data_name
-                if (self.train_args.seq2seq_type == 'action' or
-                    self.train_args.seq2seq_type == 'input_feed') and \
-                        self.train_args.action_type == 'non_integer' and \
-                        self.train_args.add_mention_end:
-                    target_sent = self.tokenizer.convert_tokens_to_ids(
-                        item['target_mention_end_sentence'])
-                else:
+                if self.train_args.action_type == "integer":
                     target_sent = self.tokenizer.convert_tokens_to_ids(
                         item['target_sentence'])
+                elif self.train_args.action_type == "non_integer":
+                    if self.train_args.add_mention_end:
+                        target_sent = self.tokenizer.convert_tokens_to_ids(
+                            item["target_non_int_mention_end_sentence"])
+                    else:
+                        target_sent = self.tokenizer.convert_tokens_to_ids(
+                            item["target_non_int_sentence"])
+                else:
+                    raise ValueError(f"wrong action type "
+                                     f"{self.train_args.action_type}")
+
                 if self.train_args.seq2seq_type == 'action' or \
                         self.train_args.seq2seq_type == 'input_feed':
                     if self.train_args.action_type == 'integer':
@@ -87,10 +92,10 @@ class JointDataset(Dataset):
                     elif self.train_args.action_type == 'non_integer':
                         if self.train_args.add_mention_end:
                             target_seq = self.tokenizer.convert_tokens_to_ids(
-                                item['target_mention_end_action'])
+                                item["target_non_int_mention_end_action"])
                         else:
                             target_seq = self.tokenizer.convert_tokens_to_ids(
-                                item['target_action'])
+                                item["target_non_int_action"])
                     else:
                         raise ValueError("wrong action type ("
                                          "integer/non_integer)")
@@ -198,15 +203,20 @@ class CorefDataset(Dataset):
                 item = json.loads(line)
                 doc_key = item['doc_key']
                 doc_id = re.sub(r'_\d+$', '', doc_key)
-                if (self.train_args.seq2seq_type == 'action' or
-                    self.train_args.seq2seq_type == 'input_feed') and \
-                        self.train_args.action_type == 'non_integer' and \
-                        self.train_args.add_mention_end:
-                    target_sent = self.tokenizer.convert_tokens_to_ids(
-                        item['target_mention_end_sentence'])
-                else:
+                if self.train_args.action_type == "integer":
                     target_sent = self.tokenizer.convert_tokens_to_ids(
                         item['target_sentence'])
+                elif self.train_args.action_type == "non_integer":
+                    if self.train_args.add_mention_end:
+                        target_sent = self.tokenizer.convert_tokens_to_ids(
+                            item["target_non_int_mention_end_sentence"])
+                    else:
+                        target_sent = self.tokenizer.convert_tokens_to_ids(
+                            item["target_non_int_sentence"])
+                else:
+                    raise ValueError(f"wrong action type "
+                                     f"{self.train_args.action_type}")
+
                 if self.train_args.seq2seq_type == 'action' or \
                         self.train_args.seq2seq_type == 'input_feed':
                     if self.train_args.action_type == 'integer':
@@ -215,10 +225,10 @@ class CorefDataset(Dataset):
                     elif self.train_args.action_type == 'non_integer':
                         if self.train_args.add_mention_end:
                             target_seq = self.tokenizer.convert_tokens_to_ids(
-                                item['target_mention_end_action'])
+                                item["target_non_int_mention_end_action"])
                         else:
                             target_seq = self.tokenizer.convert_tokens_to_ids(
-                                item['target_action'])
+                                item["target_non_int_action"])
                     else:
                         raise ValueError("wrong action type ("
                                          "integer/non_integer)")
@@ -542,8 +552,7 @@ def parse_nonint_output_tokens(input_ids, output_ids,
         if output_ids[i] == special_ids['mention_start']:
             new_id += 1
             ment_start_stack.append(new_id)
-        elif output_ids[i] == special_ids['mention_end']:
-            assert add_mention_end
+        elif add_mention_end and output_ids[i] == special_ids['mention_end']:
             assert output_ids[i + 1] in special_ids['cluster_ids_to_num']
             cid = special_ids['cluster_ids_to_num'][output_ids[i + 1]]
             if len(ment_start_stack) > 0:
