@@ -88,6 +88,18 @@ bash run_scripts/train.sh \
 - If you want to train the partial linearization model with sentence marker, set `--mark_sentence True` in `train.sh` and `train_joint.sh`.
 - If you want to run evaluation without training, you can disable training by setting `--do_train False` in the  `train.sh` and `train_joint.sh` and provide the trained model checkpoint path for `[model_name_or_path]`. 
 
+## Model checkpoints
+We've uploaded model checkpoints to huggingface hub. You can either download the model checkpoints for OntoNotes from:
+
+- T0-3b copy action full linearization model for OntoNotes [here](https://huggingface.co/VincentNLP/seq2seq-coref-t0-3b)
+- T0pp copy action full linearization model for OntoNotes  [here](https://huggingface.co/VincentNLP/seq2seq-coref-t0-pp)
+
+Or call HF `from_pretrained` method to download model checkpoints for OntoNotes automatically by
+ setting `--model_name_or_path` argument as:
+- T0-3b copy action full linearization model: `VincentNLP/seq2seq-coref-t0-3b`.
+- T0pp copy action full linearization model: `VincentNLP/seq2seq-coref-t0-pp`.
+
+
 
 
 
