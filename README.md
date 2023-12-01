@@ -89,15 +89,15 @@ bash run_scripts/train.sh \
 - If you want to run evaluation without training, you can disable training by setting `--do_train False` in the  `train.sh` and `train_joint.sh` and provide the trained model checkpoint path for `[model_name_or_path]`. 
 
 ## Model checkpoints
-We've uploaded model checkpoints to huggingface hub. You can either download the model checkpoints for OntoNotes from:
+We've uploaded model checkpoints to huggingface hub. You can download the following model checkpoints:
 
-- T0-3b copy action full linearization model for OntoNotes [here](https://huggingface.co/VincentNLP/seq2seq-coref-t0-3b)
-- T0pp copy action full linearization model for OntoNotes  [here](https://huggingface.co/VincentNLP/seq2seq-coref-t0-pp)
-
-Or call HF `from_pretrained` method to download model checkpoints for OntoNotes automatically by
- setting `--model_name_or_path` argument as:
-- T0-3b copy action full linearization model: `VincentNLP/seq2seq-coref-t0-3b`.
-- T0pp copy action full linearization model: `VincentNLP/seq2seq-coref-t0-pp`.
+- T0-3b copy action full linearization model on OntoNotes [checkpoint](https://huggingface.co/VincentNLP/seq2seq-coref-t0-3b).
+- T0-3b token action full linearization model on OntoNotes [checkpoint](https://huggingface.co/VincentNLP/seq2seq-coref-t0-3b-token-action).
+- T0-3b partial linearization with sentence marker model on OntoNotes [checkpoint](https://huggingface.co/VincentNLP/seq2seq-coref-t0-3b-partial-linear).
+- T0-3b integer-free copy action full linearization model on OntoNotes [checkpoint](https://huggingface.co/VincentNLP/seq2seq-coref-t0-3b-integer-free).
+- T0-3b integer-free add mention end copy action full linearization model on OntoNotes [checkpoint](https://huggingface.co/VincentNLP/seq2seq-coref-t0-3b-integer-free-add-mention-end).
+- T0-3b copy action full linearization model jointly trained on the union of OntoNotes, PreCo and Litbank datasets [checkpoint](https://huggingface.co/VincentNLP/seq2seq-coref-t0-3b-joint).
+- T0pp copy action full linearization model on OntoNotes [checkpoint](https://huggingface.co/VincentNLP/seq2seq-coref-t0-pp).
 
 
 
